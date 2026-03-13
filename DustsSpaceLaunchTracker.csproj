@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net10.0-android</TargetFrameworks>
@@ -75,9 +75,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\" />
 	  <Folder Include="ViewModels\" />
-	  <Folder Include="Services\Api\" />
 	  <Folder Include="Services\Data\" />
 	  <Folder Include="Views\Cards\" />
 	</ItemGroup>
