@@ -57,7 +57,7 @@ namespace DustsSpaceLaunchTracker
                 {
                     FailureRatio = 0.5,
                     MinimumThroughput = 10,                             // at least 10 calls before evaluating
-                    BreakDuration = TimeSpan.FromSeconds(30),
+                    BreakDuration = TimeSpan.FromSeconds(120),
                     ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                         .Handle<HttpRequestException>()
                         .HandleResult(r => (int)r.StatusCode >= 500)
@@ -66,7 +66,7 @@ namespace DustsSpaceLaunchTracker
                 // Timeout: per-request timeout (attempt timeout)
                 options.AttemptTimeout = new HttpTimeoutStrategyOptions
                 {
-                    Timeout = TimeSpan.FromSeconds(30)
+                    Timeout = TimeSpan.FromSeconds(15)
                 };
 
                 // Optional: total pipeline timeout (whole operation including retries)

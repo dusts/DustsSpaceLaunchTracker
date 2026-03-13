@@ -11,19 +11,20 @@ namespace DustsSpaceLaunchTracker.ViewModels
         private readonly LaunchService _launchService;
 
         [ObservableProperty]
-        private ObservableCollection<Launch> launches = new();  // ← now partial property (no private field!)
+        private ObservableCollection<Launch> launches = new();
 
         [ObservableProperty]
         private bool isLoading;
 
         [ObservableProperty]
-        private string? errorMessage;  // renamed slightly for clarity – optional
+        private string? errorMessage;
 
         public UpcomingLaunchesViewModel(LaunchService launchService)
         {
             _launchService = launchService;
         }
 
+        // This generates: LoadLaunchesCommand (ICommand) + LoadLaunchesAsync() method
         [RelayCommand]
         private async Task LoadLaunchesAsync()
         {
@@ -34,16 +35,16 @@ namespace DustsSpaceLaunchTracker.ViewModels
 
             try
             {
-                var items = await _launchService.GetUpcomingAsync(limit: 10);
+                var items = await _launchService.GetUpcomingAsync(limit: 15); // adjust limit as needed
                 Launches.Clear();
-                foreach (var launch in items)
+                foreach (var item in items)
                 {
-                    Launches.Add(launch);
+                    Launches.Add(item);
                 }
             }
             catch (Exception ex)
             {
-                ErrorMessage = $"Failed to load: {ex.Message}";
+                ErrorMessage = ex.Message;
             }
             finally
             {
@@ -51,8 +52,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
             }
         }
 
-        // Optional: auto-load on navigation / page appear
-        public async Task OnAppearingAsync()
+        // Call this from page OnAppearing
+        public async Task InitializeAsync()
         {
             await LoadLaunchesAsync();
         }

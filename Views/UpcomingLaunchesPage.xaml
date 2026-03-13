@@ -5,13 +5,28 @@
              Title="UpcomingLaunchesPage"
              x:DataType="vm:UpcomingLaunchesViewModel" 
              xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels">
-    <RefreshView Command="{Binding LoadLaunchesCommand}" IsRefreshing="{Binding IsLoading}">
+    <RefreshView Command="{Binding LoadLaunchesCommand}"
+    IsRefreshing="{Binding IsLoading, Mode=OneWay}"
+    RefreshColor="DodgerBlue">
         <ScrollView>
-            <VerticalStackLayout Padding="16" Spacing="16">
-                <Label Text="Upcoming Launches" FontSize="24" FontAttributes="Bold" />
-                <ActivityIndicator IsRunning="{Binding IsLoading}" />
-                <Label Text="{Binding Error}" TextColor="Red" />
-                <CollectionView ItemsSource="{Binding Launches}" HeightRequest="600">
+            <VerticalStackLayout Spacing="16" Padding="16">
+
+                <Label Text="Upcoming Launches" 
+                   FontSize="Title" FontAttributes="Bold" />
+
+                <ActivityIndicator 
+                IsRunning="{Binding IsLoading}" 
+                IsVisible="{Binding IsLoading}"
+                HorizontalOptions="Center"
+                Color="DodgerBlue" />
+
+                <Label Text="{Binding ErrorMessage}"
+                   TextColor="Red"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullOrEmptyConverter}}"
+                   HorizontalOptions="Center" />
+
+                <CollectionView ItemsSource="{Binding Launches}"
+                            EmptyView="No upcoming launches found at the moment…">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Border Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White" 

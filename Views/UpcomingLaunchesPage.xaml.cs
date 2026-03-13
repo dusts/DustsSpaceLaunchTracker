@@ -15,6 +15,6 @@ public partial class UpcomingLaunchesPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _vm.OnAppearingAsync();
+        await _vm.InitializeAsync();
     }
 }
