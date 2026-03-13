@@ -3,12 +3,12 @@
     x:Class="DustsSpaceLaunchTracker.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:DustsSpaceLaunchTracker"
-    Title="DustsSpaceLaunchTracker">
+    xmlns:local="clr-namespace:DustsSpaceLaunchTracker.Views"
+    Title="Dusts Space Launch Tracker">
 
     <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+        Title="Upcoming"
+        ContentTemplate="{DataTemplate local:UpcomingLaunchesPage}"
+        Route="UpcomingLaunches" />
 
 </Shell>

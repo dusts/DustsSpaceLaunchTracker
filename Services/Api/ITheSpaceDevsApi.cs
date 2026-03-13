@@ -6,15 +6,15 @@ namespace DustsSpaceLaunchTracker.Services.Api
     public interface ITheSpaceDevsApi
     {
         [Get("/launch/upcoming/?limit={limit}&offset={offset}&mode=detailed&search={search}")]
-        Task<LaunchListResponse> GetUpcomingLaunchesAsync(
-            int limit = 20,
-            int offset = 0,
-            string? search = null);
+        Task<LaunchListResponse> GetUpcomingLaunchesAsync(int limit = 20, int offset = 0, string? search = null);
 
         [Get("/launch/previous/?limit={limit}&offset={offset}&mode=detailed")]
-        Task<LaunchListResponse> GetPreviousLaunchesAsync(
-            int limit = 20,
-            int offset = 0);
+        Task<LaunchListResponse> GetPreviousLaunchesAsync(int limit = 20, int offset = 0);
+
+        [Get("/launch/{id}/?mode=detailed")]
+        Task<Launch> GetLaunchByIdAsync([AliasAs("id")] string id);
+
+        // Add more later: e.g., [Get("/agency/?limit=10")] for agencies, [Get("/config/launcher/?limit=10")] for rockets
     }
 
     public class LaunchListResponse

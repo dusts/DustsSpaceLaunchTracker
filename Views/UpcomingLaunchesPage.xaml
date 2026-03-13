@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DustsSpaceLaunchTracker.Views.UpcomingLaunchesPage"
+             Title="UpcomingLaunchesPage"
+             x:DataType="vm:UpcomingLaunchesViewModel" 
+             xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels">
+    <RefreshView Command="{Binding LoadLaunchesCommand}" IsRefreshing="{Binding IsLoading}">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="16">
+                <Label Text="Upcoming Launches" FontSize="24" FontAttributes="Bold" />
+                <ActivityIndicator IsRunning="{Binding IsLoading}" />
+                <Label Text="{Binding Error}" TextColor="Red" />
+                <CollectionView ItemsSource="{Binding Launches}" HeightRequest="600">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White" 
+                                Padding="16" Shadow="{Shadow Brush=Black, Radius=8, Offset='4,4', Opacity=0.3}" >
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="{Binding LaunchServiceProvider.Name}" FontSize="14" TextColor="Gray" />
+                                    <Label Text="{Binding Net, StringFormat='NET: {0:MMM dd, yyyy HH:mm} UTC'}" FontSize="14" />
+                                    <Label Text="{Binding Status.Name}" TextColor="Green" />
+                                    <!-- Add converter later -->
+                                    <!-- Add Image for .Image, probability badge, etc. -->
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>
