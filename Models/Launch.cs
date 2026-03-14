@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Reflection;
-using System.Text;
-
-namespace DustsSpaceLaunchTracker.Models
+﻿namespace DustsSpaceLaunchTracker.Models
 {
     /// <summary>
     /// Represents a single launch (detailed mode)

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DustsSpaceLaunchTracker.Models
+﻿namespace DustsSpaceLaunchTracker.Models
 {
     /// <summary>
     /// Represents an agency/organization/launch service provider in TheSpaceDevs API.

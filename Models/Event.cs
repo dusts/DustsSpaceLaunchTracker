@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DustsSpaceLaunchTracker.Models
+﻿namespace DustsSpaceLaunchTracker.Models
 {
     /// <summary>
     /// Represents a non-launch event from the Launch Library API (e.g. static fire, rollout, docking, announcement, etc.)

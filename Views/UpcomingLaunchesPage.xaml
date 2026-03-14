@@ -2,48 +2,96 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="DustsSpaceLaunchTracker.Views.UpcomingLaunchesPage"
-             Title="UpcomingLaunchesPage"
-             x:DataType="vm:UpcomingLaunchesViewModel" 
-             xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels">
-    <RefreshView Command="{Binding LoadLaunchesCommand}"
-    IsRefreshing="{Binding IsLoading, Mode=OneWay}"
-    RefreshColor="DodgerBlue">
-        <ScrollView>
-            <VerticalStackLayout Spacing="16" Padding="16">
+             xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels"
+             x:DataType="vm:UpcomingLaunchesViewModel"
+             Title="Upcoming Launches">
 
-                <Label Text="Upcoming Launches" 
-                   FontSize="Title" FontAttributes="Bold" />
+    <Grid RowDefinitions="Auto,Auto,*,Auto"
+          ColumnDefinitions="*"
+          Padding="16"
+          RowSpacing="16">
 
-                <ActivityIndicator 
-                IsRunning="{Binding IsLoading}" 
-                IsVisible="{Binding IsLoading}"
-                HorizontalOptions="Center"
-                Color="DodgerBlue" />
+        <!-- Row 0: Page title -->
+        <Label Grid.Row="0"
+               Text="Upcoming Launches"
+               FontSize="24"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
 
-                <Label Text="{Binding ErrorMessage}"
+        <!-- Row 1: Loading + Error indicators (centered) -->
+        <VerticalStackLayout Grid.Row="1"
+                             Spacing="12"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+            <ActivityIndicator IsRunning="{Binding IsLoading}"
+                               IsVisible="{Binding IsLoading}"
+                               Color="DodgerBlue"
+                               HeightRequest="48"
+                               WidthRequest="48" />
+
+            <Label Text="{Binding ErrorMessage}"
                    TextColor="Red"
-                   IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullOrEmptyConverter}}"
-                   HorizontalOptions="Center" />
+                   FontSize="16"
+                   HorizontalTextAlignment="Center"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+        </VerticalStackLayout>
 
-                <CollectionView ItemsSource="{Binding Launches}"
-                            EmptyView="No upcoming launches found at the moment…">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 12" BackgroundColor="White" 
-                                Padding="16" Shadow="{Shadow Brush=Black, Radius=8, Offset='4,4', Opacity=0.3}" >
-                                <VerticalStackLayout Spacing="4">
-                                    <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" />
-                                    <Label Text="{Binding LaunchServiceProvider.Name}" FontSize="14" TextColor="Gray" />
-                                    <Label Text="{Binding Net, StringFormat='NET: {0:MMM dd, yyyy HH:mm} UTC'}" FontSize="14" />
-                                    <Label Text="{Binding Status.Name}" TextColor="Green" />
-                                    <!-- Add converter later -->
-                                    <!-- Add Image for .Image, probability badge, etc. -->
-                                </VerticalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
-        </ScrollView>
-    </RefreshView>
+        <!-- Row 2 (*): Main content – RefreshView + CollectionView takes remaining space -->
+        <RefreshView Grid.Row="2"
+                     Command="{Binding LoadLaunchesCommand}"
+                     IsRefreshing="{Binding IsLoading}">
+
+            <CollectionView ItemsSource="{Binding Launches}"
+                            EmptyView="No upcoming launches scheduled at the moment…"
+                            EmptyViewTemplate="{StaticResource EmptyViewTemplate}"
+                VerticalScrollBarVisibility="Always">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Your card goes here – simple version for now -->
+                        <Border Stroke="LightGray"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="16"
+                                Margin="0,8"
+                                BackgroundColor="White"
+                                Shadow="True">
+
+                            <VerticalStackLayout Spacing="10">
+                                <Label Text="{Binding Name}"
+                                       FontSize="18"
+                                       FontAttributes="Bold"
+                                       MaxLines="2"
+                                       LineBreakMode="TailTruncation" />
+
+                                <Label Text="{Binding Rocket?.Configuration?.FullName, StringFormat='{0}', FallbackValue='Unknown rocket'}"
+                                       FontSize="16"
+                                       TextColor="Gray" />
+
+                                <Label Text="{Binding Net, StringFormat='NET: {0:yyyy-MM-dd HH:mm UTC}', FallbackValue='NET: TBD'}"
+                                       FontSize="14"
+                                       TextColor="DarkSlateGray" />
+                                <Label Text="{Binding Status.Name, StringFormat='{0}', FallbackValue='Unknown status'}"
+                                       FontSize="14"
+                                       TextColor="{Binding Status, Converter={StaticResource StatusToColorConverter}, TargetNullValue='Gray', FallbackValue='Gray'}" />
+
+                                <!-- Add more fields later: probability, pad, image, etc. -->
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Row 3: Optional footer / last updated info (can be empty for now) -->
+        <Label Grid.Row="3"
+               Text="Data from TheSpaceDevs API"
+               FontSize="12"
+               TextColor="Gray"
+               HorizontalOptions="Center"
+               VerticalOptions="End" />
+
+    </Grid>
 </ContentPage>

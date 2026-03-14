@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DustsSpaceLaunchTracker.Models.Responses
+﻿namespace DustsSpaceLaunchTracker.Models.Responses
 {
     /// <summary>
     /// Common pagination wrapper used by almost every list endpoint.
