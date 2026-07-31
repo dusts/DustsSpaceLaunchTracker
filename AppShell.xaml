@@ -17,6 +17,11 @@
             Title="Previous"
             Route="PreviousLaunches"
             ContentTemplate="{DataTemplate views:PreviousLaunchesPage}" />
+
+        <ShellContent
+            Title="Diagnostics"
+            Route="Diagnostics"
+            ContentTemplate="{DataTemplate views:DiagnosticsPage}" />
     </TabBar>
 
 </Shell>

@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using DustsSpaceLaunchTracker.Configuration;
 using DustsSpaceLaunchTracker.Models.Responses;
 using DustsSpaceLaunchTracker.Services;
+using DustsSpaceLaunchTracker.Services.Diagnostics;
 using System.Collections.ObjectModel;
 using System.Net;
 
@@ -13,6 +14,7 @@ namespace DustsSpaceLaunchTracker.ViewModels
     public abstract partial class LaunchListViewModelBase : ViewModelBase, IDisposable
     {
         private readonly ILaunchService _launchService;
+        private readonly IDiagnosticsService _diagnostics;
         private readonly Func<ILaunchService, int, int, string?, int?, int?, bool, CancellationToken, Task<PagedResult<Models.Launch>>> _pageFetcher;
         private readonly string _title;
 
@@ -27,6 +29,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
         private bool _isRefreshing;
         private bool _isLoadingMore;
         private string? _errorMessage;
+        private string? _errorDetail;
+        private bool _showErrorDetail;
         private bool _hasMoreItems = true;
         private int _totalCount;
         private string _statusText = string.Empty;
@@ -40,10 +44,12 @@ namespace DustsSpaceLaunchTracker.ViewModels
 
         protected LaunchListViewModelBase(
             ILaunchService launchService,
+            IDiagnosticsService diagnostics,
             string title,
             Func<ILaunchService, int, int, string?, int?, int?, bool, CancellationToken, Task<PagedResult<Models.Launch>>> pageFetcher)
         {
             _launchService = launchService;
+            _diagnostics = diagnostics;
             _title = title;
             _pageFetcher = pageFetcher;
         }
@@ -77,8 +83,32 @@ namespace DustsSpaceLaunchTracker.ViewModels
         public string? ErrorMessage
         {
             get => _errorMessage;
-            private set => SetProperty(ref _errorMessage, value);
+            private set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                    OnPropertyChanged(nameof(HasError));
+            }
         }
+
+        /// <summary>Full exception text for expand/copy on mobile.</summary>
+        public string? ErrorDetail
+        {
+            get => _errorDetail;
+            private set
+            {
+                if (SetProperty(ref _errorDetail, value))
+                    OnPropertyChanged(nameof(HasErrorDetail));
+            }
+        }
+
+        public bool ShowErrorDetail
+        {
+            get => _showErrorDetail;
+            set => SetProperty(ref _showErrorDetail, value);
+        }
+
+        public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+        public bool HasErrorDetail => !string.IsNullOrWhiteSpace(ErrorDetail);
 
         public bool HasMoreItems
         {
@@ -243,6 +273,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
 
             IsBusy = true;
             ErrorMessage = null;
+            ErrorDetail = null;
+            ShowErrorDetail = false;
             IsFromCacheNotice = false;
 
             if (reset)
@@ -259,6 +291,9 @@ namespace DustsSpaceLaunchTracker.ViewModels
             try
             {
                 var statusId = _selectedStatusFilter?.Id;
+                _diagnostics.Info(
+                    _title,
+                    $"Loading limit={AppConfig.PageSize} offset={(reset ? 0 : _offset)} search={_activeSearch ?? "-"} status={statusId?.ToString() ?? "all"} force={forceRefresh}");
 
                 var page = await _pageFetcher(
                     _launchService,
@@ -283,6 +318,7 @@ namespace DustsSpaceLaunchTracker.ViewModels
                 HasMoreItems = page.HasNextPage && page.Items.Count > 0;
                 TickCountdowns();
                 UpdateStatusUi();
+                _diagnostics.Info(_title, $"Loaded {page.Items.Count} items (total={page.TotalCount}, hasNext={page.HasNextPage})");
             }
             catch (OperationCanceledException)
             {
@@ -295,6 +331,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
                     return;
 
                 ErrorMessage = FriendlyError(ex);
+                ErrorDetail = FormatExceptionDetail(ex);
+                _diagnostics.Error(_title, ErrorMessage, ex);
                 if (reset && Launches.Count == 0)
                     HasMoreItems = false;
                 UpdateStatusUi();
@@ -382,6 +420,43 @@ namespace DustsSpaceLaunchTracker.ViewModels
             StatusText = $"Showing {Launches.Count} of {TotalCount}{searchBit}";
         }
 
+        [RelayCommand]
+        private void ToggleErrorDetail()
+            => ShowErrorDetail = !ShowErrorDetail;
+
+        [RelayCommand]
+        private async Task CopyErrorAsync()
+        {
+            var text = string.IsNullOrWhiteSpace(ErrorDetail)
+                ? ErrorMessage
+                : $"{ErrorMessage}\n\n{ErrorDetail}";
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            try
+            {
+                await Clipboard.Default.SetTextAsync(text);
+                _diagnostics.Info(_title, "Error details copied to clipboard");
+            }
+            catch (Exception ex)
+            {
+                _diagnostics.Error(_title, "Failed to copy error", ex);
+            }
+        }
+
+        [RelayCommand]
+        private async Task OpenDiagnosticsAsync()
+        {
+            try
+            {
+                await Shell.Current.GoToAsync("//Diagnostics");
+            }
+            catch (Exception ex)
+            {
+                _diagnostics.Error(_title, "Navigation to Diagnostics failed", ex);
+            }
+        }
+
         private static string FriendlyError(Exception ex)
         {
             // Refit reports HTTP 200 + ApiException when JSON deserialization fails
@@ -416,6 +491,30 @@ namespace DustsSpaceLaunchTracker.ViewModels
             return string.IsNullOrWhiteSpace(ex.Message)
                 ? "Something went wrong loading launches."
                 : ex.Message;
+        }
+
+        private static string FormatExceptionDetail(Exception ex)
+        {
+            if (ex is Refit.ApiException api)
+            {
+                return
+                    $"Type: {ex.GetType().FullName}\n" +
+                    $"Status: {(int)api.StatusCode} {api.StatusCode}\n" +
+                    $"Uri: {api.Uri}\n" +
+                    $"Message: {api.Message}\n" +
+                    $"Content: {Trim(api.Content, 1500)}\n" +
+                    $"Inner: {api.InnerException}\n" +
+                    $"Stack:\n{api.StackTrace}";
+            }
+
+            return ex.ToString();
+        }
+
+        private static string Trim(string? value, int max)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "(empty)";
+            return value.Length <= max ? value : value[..max] + "…";
         }
 
         public void OnDisappearing()

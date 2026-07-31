@@ -3,6 +3,7 @@ using DustsSpaceLaunchTracker.Configuration;
 using DustsSpaceLaunchTracker.Services;
 using DustsSpaceLaunchTracker.Services.Api;
 using DustsSpaceLaunchTracker.Services.Data;
+using DustsSpaceLaunchTracker.Services.Diagnostics;
 using DustsSpaceLaunchTracker.ViewModels;
 using DustsSpaceLaunchTracker.Views;
 using Microsoft.Extensions.Http.Resilience;
@@ -83,17 +84,20 @@ namespace DustsSpaceLaunchTracker
                 });
 
             // Data & services
+            builder.Services.AddSingleton<IDiagnosticsService, DiagnosticsService>();
             builder.Services.AddSingleton<ILaunchCache, FileLaunchCache>();
             builder.Services.AddSingleton<ILaunchService, LaunchService>();
 
-            // Shell + pages + VMs (point 1: constructor DI)
+            // Shell + pages + VMs
             builder.Services.AddSingleton<AppShell>();
             builder.Services.AddTransient<UpcomingLaunchesViewModel>();
             builder.Services.AddTransient<PreviousLaunchesViewModel>();
             builder.Services.AddTransient<LaunchDetailViewModel>();
+            builder.Services.AddTransient<DiagnosticsViewModel>();
             builder.Services.AddTransient<UpcomingLaunchesPage>();
             builder.Services.AddTransient<PreviousLaunchesPage>();
             builder.Services.AddTransient<LaunchDetailPage>();
+            builder.Services.AddTransient<DiagnosticsPage>();
 
             return builder.Build();
         }

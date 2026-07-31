@@ -12,21 +12,26 @@
 - Live countdown + local/UTC NET times
 - Offline-friendly file cache (stale-while-revalidate on network errors)
 - Optional API token for higher rate limits
+- In-app **Diagnostics** tab (errors, network, copy/share report)
 - Unit tests for JSON parsing, services, cache, and helpers
 
 ## Solution layout
 
 ```
 DustsSpaceLaunchTracker/          # MAUI app (repo root)
+apk/                              # device-ready APK (commit/push for download)
 tests/
   DustsSpaceLaunchTracker.Tests/  # xUnit unit tests
+scripts/build-device-apk.ps1
 DustsSpaceLaunchTracker.slnx
 ```
 
 | Path | Purpose |
 |------|---------|
 | `DustsSpaceLaunchTracker.csproj` | MAUI app (Android, iOS, Mac Catalyst, Windows) |
-| `tests/DustsSpaceLaunchTracker.Tests/` | xUnit tests for shared logic (models, services, helpers) |
+| `apk/` | Sideload APK for real-device testing (included in repo) |
+| `tests/DustsSpaceLaunchTracker.Tests/` | xUnit tests for shared logic |
+| `scripts/build-device-apk.ps1` | Rebuilds embedded APK into `apk/` |
 
 ## Prerequisites
 
@@ -53,15 +58,30 @@ With Visual Studio / `dotnet` install targets (Fast Deployment works here):
 dotnet build DustsSpaceLaunchTracker.csproj -f net10.0-android -t:Run
 ```
 
-For a standalone APK you can `adb install` (assemblies embedded):
+**Real device:** use the APK in `apk/`:
 
 ```powershell
-dotnet build DustsSpaceLaunchTracker.csproj -f net10.0-android -c Debug -p:EmbedAssembliesIntoApk=true
-adb install -r bin\Debug\net10.0-android\com.companyname.dustsspacelaunchtracker-Signed.apk
+adb install -r .\apk\DustsSpaceLaunchTracker-Debug-v1.0.apk
 ```
+
+Rebuild into `apk/`:
+
+```powershell
+.\scripts\build-device-apk.ps1
+```
+
+This uses embedded assemblies (required for plain `adb install`). See `apk/README.md`.
 
 > **Note:** A plain Debug APK without `EmbedAssembliesIntoApk=true` expects
 > Fast Deployment and will crash if installed only with `adb install`.
+
+### Diagnostics (mobile)
+
+If something fails on a phone:
+
+1. Open the **Diagnostics** tab (network, API host, device info, recent log).
+2. On list/detail errors, use **Details** / **Copy** / **Diagnostics**.
+3. Use **Copy report** or **Share** and send the text for debugging.
 
 ## Tests
 

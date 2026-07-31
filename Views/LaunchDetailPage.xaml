@@ -58,9 +58,35 @@
                         Command="{Binding RefreshCommand}"
                         Margin="0,4,0,0" />
 
-                <Label Text="{Binding ErrorMessage}"
-                       TextColor="Red"
-                       IsVisible="{Binding ErrorMessage, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+                <Border IsVisible="{Binding HasError}"
+                        StrokeThickness="1"
+                        Padding="10"
+                        BackgroundColor="{AppThemeBinding Light=#FFF5F5, Dark=#3A1F1F}">
+                    <Border.Stroke>
+                        <SolidColorBrush Color="#E57373" />
+                    </Border.Stroke>
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="{Binding ErrorMessage}"
+                               TextColor="#C62828"
+                               FontSize="13" />
+                        <Label Text="{Binding ErrorDetail}"
+                               FontSize="10"
+                               IsVisible="{Binding ShowErrorDetail}"
+                               LineBreakMode="WordWrap" />
+                        <FlexLayout Wrap="Wrap">
+                            <Button Text="Details"
+                                    Command="{Binding ToggleErrorDetailCommand}"
+                                    IsVisible="{Binding HasErrorDetail}"
+                                    FontSize="12"
+                                    Padding="10,4"
+                                    Margin="0,0,8,0" />
+                            <Button Text="Diagnostics"
+                                    Command="{Binding OpenDiagnosticsCommand}"
+                                    FontSize="12"
+                                    Padding="10,4" />
+                        </FlexLayout>
+                    </VerticalStackLayout>
+                </Border>
             </VerticalStackLayout>
         </ScrollView>
 

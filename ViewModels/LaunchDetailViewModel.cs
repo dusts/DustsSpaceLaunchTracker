@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.Input;
 using DustsSpaceLaunchTracker.Helpers;
 using DustsSpaceLaunchTracker.Models;
 using DustsSpaceLaunchTracker.Services;
+using DustsSpaceLaunchTracker.Services.Diagnostics;
 using System.Net;
 
 namespace DustsSpaceLaunchTracker.ViewModels
@@ -9,6 +10,7 @@ namespace DustsSpaceLaunchTracker.ViewModels
     public sealed partial class LaunchDetailViewModel : ViewModelBase
     {
         private readonly ILaunchService _launchService;
+        private readonly IDiagnosticsService _diagnostics;
         private CancellationTokenSource? _loadCts;
         private IDispatcherTimer? _timer;
 
@@ -16,13 +18,16 @@ namespace DustsSpaceLaunchTracker.ViewModels
         private Launch? _launch;
         private bool _isBusy;
         private string? _errorMessage;
+        private string? _errorDetail;
+        private bool _showErrorDetail;
         private string _countdownText = string.Empty;
         private string _localNetText = string.Empty;
         private string _utcNetText = string.Empty;
 
-        public LaunchDetailViewModel(ILaunchService launchService)
+        public LaunchDetailViewModel(ILaunchService launchService, IDiagnosticsService diagnostics)
         {
             _launchService = launchService;
+            _diagnostics = diagnostics;
         }
 
         public string? LaunchId
@@ -63,8 +68,31 @@ namespace DustsSpaceLaunchTracker.ViewModels
         public string? ErrorMessage
         {
             get => _errorMessage;
-            private set => SetProperty(ref _errorMessage, value);
+            private set
+            {
+                if (SetProperty(ref _errorMessage, value))
+                    OnPropertyChanged(nameof(HasError));
+            }
         }
+
+        public string? ErrorDetail
+        {
+            get => _errorDetail;
+            private set
+            {
+                if (SetProperty(ref _errorDetail, value))
+                    OnPropertyChanged(nameof(HasErrorDetail));
+            }
+        }
+
+        public bool ShowErrorDetail
+        {
+            get => _showErrorDetail;
+            set => SetProperty(ref _showErrorDetail, value);
+        }
+
+        public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+        public bool HasErrorDetail => !string.IsNullOrWhiteSpace(ErrorDetail);
 
         public bool HasImage => !string.IsNullOrWhiteSpace(Launch?.Image);
         public string RocketName =>
@@ -127,9 +155,12 @@ namespace DustsSpaceLaunchTracker.ViewModels
 
             IsBusy = true;
             ErrorMessage = null;
+            ErrorDetail = null;
+            ShowErrorDetail = false;
 
             try
             {
+                _diagnostics.Info(nameof(LaunchDetailViewModel), $"Loading detail id={LaunchId}");
                 Launch = await _launchService.GetLaunchDetailAsync(LaunchId, forceRefresh: false, ct);
                 EnsureTimer();
             }
@@ -137,6 +168,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
             catch (Exception ex)
             {
                 ErrorMessage = FriendlyError(ex);
+                ErrorDetail = ex.ToString();
+                _diagnostics.Error(nameof(LaunchDetailViewModel), ErrorMessage, ex);
             }
             finally
             {
@@ -154,6 +187,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
             _loadCts = new CancellationTokenSource();
             IsBusy = true;
             ErrorMessage = null;
+            ErrorDetail = null;
+            ShowErrorDetail = false;
             try
             {
                 Launch = await _launchService.GetLaunchDetailAsync(LaunchId, forceRefresh: true, _loadCts.Token);
@@ -161,6 +196,8 @@ namespace DustsSpaceLaunchTracker.ViewModels
             catch (Exception ex)
             {
                 ErrorMessage = FriendlyError(ex);
+                ErrorDetail = ex.ToString();
+                _diagnostics.Error(nameof(LaunchDetailViewModel), ErrorMessage, ex);
             }
             finally
             {
@@ -179,6 +216,24 @@ namespace DustsSpaceLaunchTracker.ViewModels
             catch (Exception ex)
             {
                 ErrorMessage = $"Could not open webcast: {ex.Message}";
+                ErrorDetail = ex.ToString();
+                _diagnostics.Error(nameof(LaunchDetailViewModel), ErrorMessage, ex);
+            }
+        }
+
+        [RelayCommand]
+        private void ToggleErrorDetail() => ShowErrorDetail = !ShowErrorDetail;
+
+        [RelayCommand]
+        private async Task OpenDiagnosticsAsync()
+        {
+            try
+            {
+                await Shell.Current.GoToAsync("//Diagnostics");
+            }
+            catch (Exception ex)
+            {
+                _diagnostics.Error(nameof(LaunchDetailViewModel), "Navigation to Diagnostics failed", ex);
             }
         }
 

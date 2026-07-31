@@ -55,9 +55,38 @@
 		<EmbeddedResource Remove="tests\**" />
 		<MauiXaml Remove="tests\**" />
 		<Content Remove="tests\**" />
+		<Compile Remove="scripts\**" />
+		<None Remove="scripts\**" />
+		<Compile Remove="artifacts\**" />
+		<None Remove="artifacts\**" />
+		<Compile Remove="apk\**" />
+		<None Remove="apk\**" />
+		<!-- Track APKs in repo for device download, but don't treat them as content to deploy -->
+		<Content Remove="apk\**" />
+		<AndroidAsset Remove="apk\**" />
 	</ItemGroup>
 
+	<!-- After Android package, copy a device-ready APK into apk/ when present. -->
+	<Target Name="CopyDeviceApkToProjectFolder"
+	        AfterTargets="Build"
+	        Condition="'$(TargetFramework)' == 'net10.0-android' And '$(EmbedAssembliesIntoApk)' == 'true'">
+		<PropertyGroup>
+			<_DeviceApkDir>$(MSBuildProjectDirectory)\apk\</_DeviceApkDir>
+			<_SignedApkCandidate>$(OutputPath)$(ApplicationId)-Signed.apk</_SignedApkCandidate>
+			<_DeviceApkName>DustsSpaceLaunchTracker-$(Configuration)-v$(ApplicationDisplayVersion).apk</_DeviceApkName>
+		</PropertyGroup>
+		<MakeDir Directories="$(_DeviceApkDir)" />
+		<Copy SourceFiles="$(_SignedApkCandidate)"
+		      DestinationFiles="$(_DeviceApkDir)$(_DeviceApkName)"
+		      SkipUnchangedFiles="true"
+		      Condition="Exists('$(_SignedApkCandidate)')" />
+		<Message Importance="High"
+		         Text="Device APK copied to apk\$(_DeviceApkName)"
+		         Condition="Exists('$(_DeviceApkDir)$(_DeviceApkName)')" />
+	</Target>
+
 </Project>
+
 
 
 

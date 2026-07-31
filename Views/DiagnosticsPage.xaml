@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DustsSpaceLaunchTracker.Views.DiagnosticsPage"
+             xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels"
+             x:DataType="vm:DiagnosticsViewModel"
+             Title="Diagnostics">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="12"
+          RowSpacing="10">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
+            <Label Text="Device &amp; environment"
+                   FontAttributes="Bold"
+                   FontSize="16" />
+            <Border StrokeThickness="1"
+                    Padding="10"
+                    BackgroundColor="{AppThemeBinding Light=#F7F7F7, Dark=#1E1E1E}">
+                <Border.Stroke>
+                    <SolidColorBrush Color="{AppThemeBinding Light=LightGray, Dark=#444}" />
+                </Border.Stroke>
+                <Label Text="{Binding EnvironmentSummary}"
+                       FontFamily="OpenSansRegular"
+                       FontSize="12"
+                       LineBreakMode="WordWrap" />
+            </Border>
+
+            <FlexLayout Wrap="Wrap"
+                        JustifyContent="Start"
+                        AlignItems="Start">
+                <Button Text="Refresh"
+                        Command="{Binding RefreshCommand}"
+                        Margin="0,0,8,8" />
+                <Button Text="Copy report"
+                        Command="{Binding CopyReportCommand}"
+                        Margin="0,0,8,8" />
+                <Button Text="Share"
+                        Command="{Binding ShareReportCommand}"
+                        Margin="0,0,8,8" />
+                <Button Text="Probe network"
+                        Command="{Binding LogConnectivityProbeCommand}"
+                        Margin="0,0,8,8" />
+                <Button Text="Clear log"
+                        Command="{Binding ClearLogCommand}"
+                        Margin="0,0,8,8" />
+            </FlexLayout>
+
+            <Label Text="{Binding StatusMessage}"
+                   TextColor="DodgerBlue"
+                   FontSize="12"
+                   IsVisible="{Binding StatusMessage, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1"
+                StrokeThickness="1"
+                Padding="8">
+            <Border.Stroke>
+                <SolidColorBrush Color="{AppThemeBinding Light=LightGray, Dark=#444}" />
+            </Border.Stroke>
+            <ScrollView>
+                <Label Text="{Binding LogText}"
+                       FontSize="11"
+                       LineBreakMode="WordWrap"
+                       FontFamily="OpenSansRegular" />
+            </ScrollView>
+        </Border>
+
+        <Label Grid.Row="2"
+               Text="Tip: after a failure, use Copy report or Share and send the text."
+               FontSize="11"
+               TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}"
+               HorizontalOptions="Center" />
+    </Grid>
+</ContentPage>

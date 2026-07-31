@@ -61,7 +61,14 @@ BenchmarkDotNet.Artifacts/
 # .NET Core
 project.lock.json
 project.fragment.lock.json
-artifacts/
+
+# Device APK drop folder: keep structure, ignore binary packages
+artifacts/**
+!artifacts/apk/
+!artifacts/apk/**
+artifacts/apk/*.apk
+artifacts/apk/*.aab
+
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
