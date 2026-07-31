@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Border xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels"
+        x:Class="DustsSpaceLaunchTracker.Views.Cards.LaunchCard"
+        x:DataType="vm:LaunchListItemViewModel"
+        StrokeThickness="1"
+        Padding="0"
+        Margin="0,6"
+        BackgroundColor="{AppThemeBinding Light=White, Dark=#1E1E1E}">
+    <Border.Stroke>
+        <SolidColorBrush Color="{AppThemeBinding Light=LightGray, Dark=#444444}" />
+    </Border.Stroke>
+    <Border.StrokeShape>
+        <RoundRectangle CornerRadius="12" />
+    </Border.StrokeShape>
+    <Grid ColumnDefinitions="Auto,*"
+          ColumnSpacing="12"
+          Padding="12">
+
+        <Image Grid.Column="0"
+               Source="{Binding ImageUrl}"
+               IsVisible="{Binding HasImage}"
+               WidthRequest="72"
+               HeightRequest="72"
+               Aspect="AspectFill"
+               VerticalOptions="Center" />
+
+        <BoxView Grid.Column="0"
+                 IsVisible="{Binding HasImage, Converter={StaticResource InvertedBoolConverter}}"
+                 WidthRequest="72"
+                 HeightRequest="72"
+                 Color="{AppThemeBinding Light=#E8E8E8, Dark=#333333}"
+                 CornerRadius="8"
+                 VerticalOptions="Center" />
+
+        <VerticalStackLayout Grid.Column="1" Spacing="4">
+            <Label Text="{Binding Name}"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   LineBreakMode="TailTruncation"
+                   MaxLines="2" />
+            <Label Text="{Binding RocketName}"
+                   FontSize="13"
+                   TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+            <Label Text="{Binding CountdownText}"
+                   FontSize="14"
+                   FontAttributes="Bold"
+                   TextColor="DodgerBlue" />
+            <Label Text="{Binding LocalNetText}"
+                   FontSize="12"
+                   TextColor="{AppThemeBinding Light=DarkSlateGray, Dark=Silver}" />
+            <Label Text="{Binding UtcNetText}"
+                   FontSize="11"
+                   TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}" />
+            <Label Text="{Binding StatusName}"
+                   FontSize="12"
+                   TextColor="{Binding Status, Converter={StaticResource StatusToColorConverter}}" />
+            <Label Text="{Binding PadName}"
+                   FontSize="11"
+                   TextColor="{AppThemeBinding Light=Gray, Dark=LightGray}"
+                   IsVisible="{Binding PadName, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
+        </VerticalStackLayout>
+    </Grid>
+</Border>

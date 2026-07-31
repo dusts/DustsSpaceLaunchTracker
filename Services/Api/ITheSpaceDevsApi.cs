@@ -1,97 +1,92 @@
-﻿using DustsSpaceLaunchTracker.Models;
+using DustsSpaceLaunchTracker.Configuration;
+using DustsSpaceLaunchTracker.Models;
 using DustsSpaceLaunchTracker.Models.Responses;
 using Refit;
 
 namespace DustsSpaceLaunchTracker.Services.Api
 {
+    /// <summary>
+    /// Paths start with '/' (Refit requirement). Host is AppConfig.ApiBaseUrl;
+    /// version lives in ApiRoutes so BaseAddress + path does not drop /2.2.0/.
+    /// CancellationToken is supported as a trailing parameter by Refit (point 3).
+    /// </summary>
     public interface ITheSpaceDevsApi
     {
-        // ───────────────────────────────────────────────────────────────
-        //  Launches – main endpoints for the tracker
-        // ───────────────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Upcoming launches (most important for the main screen)
-        /// </summary>
-        [Get("/launch/upcoming/?limit={limit}&offset={offset}&mode=detailed&search={search}&status={status}&launcher={launcher}")]
+        [Get(ApiRoutes.UpcomingLaunches)]
         Task<LaunchListResponse> GetUpcomingLaunchesAsync(
             int limit = 20,
             int offset = 0,
+            string mode = AppConfig.ListMode,
             string? search = null,
             int? status = null,
-            int? launcher = null);
+            int? launcher = null,
+            CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Previous / historical launches
-        /// </summary>
-        [Get("/launch/previous/?limit={limit}&offset={offset}&mode=detailed&search={search}&status={status}&launcher={launcher}")]
+        [Get(ApiRoutes.PreviousLaunches)]
         Task<LaunchListResponse> GetPreviousLaunchesAsync(
             int limit = 20,
             int offset = 0,
+            string mode = AppConfig.ListMode,
             string? search = null,
             int? status = null,
-            int? launcher = null);
+            int? launcher = null,
+            CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Single launch detail (for detail page)
-        /// </summary>
-        [Get("/launch/{id}/?mode=detailed")]
-        Task<Launch> GetLaunchDetailAsync(string id);
+        [Get(ApiRoutes.LaunchDetail)]
+        Task<Launch> GetLaunchDetailAsync(
+            string id,
+            string mode = AppConfig.DetailMode,
+            CancellationToken cancellationToken = default);
 
-        // ───────────────────────────────────────────────────────────────
-        //  Rocket / Launcher configurations
-        // ───────────────────────────────────────────────────────────────
-
-        [Get("/config/launcher/?limit={limit}&offset={offset}&mode=detailed&search={search}")]
+        [Get(ApiRoutes.Launchers)]
         Task<LauncherConfigListResponse> GetLaunchersAsync(
             int limit = 50,
             int offset = 0,
-            string? search = null);
+            string mode = AppConfig.ListMode,
+            string? search = null,
+            CancellationToken cancellationToken = default);
 
-        [Get("/config/launcher/{id}/?mode=detailed")]
-        Task<RocketConfiguration> GetLauncherDetailAsync(int id);
+        [Get(ApiRoutes.LauncherDetail)]
+        Task<RocketConfiguration> GetLauncherDetailAsync(
+            int id,
+            string mode = AppConfig.DetailMode,
+            CancellationToken cancellationToken = default);
 
-        // ───────────────────────────────────────────────────────────────
-        //  Agencies / Launch Service Providers
-        // ───────────────────────────────────────────────────────────────
-
-        [Get("/agency/?limit={limit}&offset={offset}&search={search}")]
+        [Get(ApiRoutes.Agencies)]
         Task<AgencyListResponse> GetAgenciesAsync(
             int limit = 50,
             int offset = 0,
-            string? search = null);
+            string? search = null,
+            CancellationToken cancellationToken = default);
 
-        [Get("/agency/{id}/")]
-        Task<Agency> GetAgencyDetailAsync(int id);
+        [Get(ApiRoutes.AgencyDetail)]
+        Task<Agency> GetAgencyDetailAsync(int id, CancellationToken cancellationToken = default);
 
-        // ───────────────────────────────────────────────────────────────
-        //  Launch Pads / Sites
-        // ───────────────────────────────────────────────────────────────
-
-        [Get("/pad/?limit={limit}&offset={offset}&mode=detailed&search={search}")]
+        [Get(ApiRoutes.Pads)]
         Task<PadListResponse> GetLaunchPadsAsync(
             int limit = 50,
             int offset = 0,
-            string? search = null);
+            string mode = AppConfig.ListMode,
+            string? search = null,
+            CancellationToken cancellationToken = default);
 
-        [Get("/pad/{id}/?mode=detailed")]
-        Task<Pad> GetLaunchPadDetailAsync(int id);
+        [Get(ApiRoutes.PadDetail)]
+        Task<Pad> GetLaunchPadDetailAsync(
+            int id,
+            string mode = AppConfig.DetailMode,
+            CancellationToken cancellationToken = default);
 
-        // ───────────────────────────────────────────────────────────────
-        //  Status codes (useful for filters, colors, badges)
-        // ───────────────────────────────────────────────────────────────
+        [Get(ApiRoutes.LaunchStatuses)]
+        Task<LaunchStatusListResponse> GetLaunchStatusesAsync(
+            int limit = 30,
+            CancellationToken cancellationToken = default);
 
-        [Get("/launchstatus/?limit={limit}")]
-        Task<LaunchStatusListResponse> GetLaunchStatusesAsync(int limit = 30);
-
-        // ───────────────────────────────────────────────────────────────
-        //  Upcoming non-launch events (static fires, dockings, announcements, etc.)
-        // ───────────────────────────────────────────────────────────────
-
-        [Get("/event/upcoming/?limit={limit}&offset={offset}&mode=detailed&search={search}")]
+        [Get(ApiRoutes.UpcomingEvents)]
         Task<EventListResponse> GetUpcomingEventsAsync(
             int limit = 10,
             int offset = 0,
-            string? search = null);
+            string mode = AppConfig.ListMode,
+            string? search = null,
+            CancellationToken cancellationToken = default);
     }
 }

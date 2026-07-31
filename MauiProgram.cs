@@ -1,12 +1,14 @@
-﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui;
+using DustsSpaceLaunchTracker.Configuration;
 using DustsSpaceLaunchTracker.Services;
 using DustsSpaceLaunchTracker.Services.Api;
+using DustsSpaceLaunchTracker.Services.Data;
 using DustsSpaceLaunchTracker.ViewModels;
 using DustsSpaceLaunchTracker.Views;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Http.Resilience;
+using Microsoft.Extensions.Logging;
 using Polly;
-using Refit;// for DelayBackoffType
+using Refit;
 using System.Net;
 
 namespace DustsSpaceLaunchTracker
@@ -30,59 +32,68 @@ namespace DustsSpaceLaunchTracker
             builder.Logging.AddDebug();
 #endif
 
-            // ── Refit + new Resilience pipeline ───────────────────────────────────────
-            builder.Services.AddRefitClient<ITheSpaceDevsApi>()
-            .ConfigureHttpClient(c =>
+            var refitSettings = new RefitSettings
             {
-                c.BaseAddress = new Uri("https://ll.thespacedevs.com/2.2.0/");
-                c.Timeout = TimeSpan.FromSeconds(25);
-            })
-            .AddStandardResilienceHandler(options =>
-            {
-                // Retry: 3 attempts, exponential backoff starting at 2s (2→4→8s), handle transients + 429 + 5xx
-                options.Retry = new HttpRetryStrategyOptions
+                ContentSerializer = new SystemTextJsonContentSerializer(TheSpaceDevsJson.CreateOptions())
+            };
+
+            builder.Services.AddTransient<AuthHeaderHandler>();
+
+            builder.Services.AddRefitClient<ITheSpaceDevsApi>(refitSettings)
+                .ConfigureHttpClient(c =>
                 {
-                    MaxRetryAttempts = 3,
-                    Delay = TimeSpan.FromSeconds(2),                    // base delay
-                    BackoffType = DelayBackoffType.Exponential,         // exponential: 2s → 4s → 8s
-                    UseJitter = true,                                   // optional: adds randomness to prevent thundering herd
-                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                        .Handle<HttpRequestException>()                 // network-level errors
-                        .HandleResult(r => r.StatusCode == HttpStatusCode.TooManyRequests)  // 429 rate limit
-                        .HandleResult(r => (int)r.StatusCode >= 500)    // 5xx server errors
-                };
-
-                // Circuit Breaker: break after 50% failures in 10 requests, break for 30s
-                options.CircuitBreaker = new HttpCircuitBreakerStrategyOptions
+                    c.BaseAddress = new Uri(AppConfig.ApiBaseUrl);
+                    c.Timeout = TimeSpan.FromSeconds(25);
+                    c.DefaultRequestHeaders.UserAgent.ParseAdd("DustsSpaceLaunchTracker/1.0");
+                })
+                .AddHttpMessageHandler<AuthHeaderHandler>()
+                .AddStandardResilienceHandler(options =>
                 {
-                    FailureRatio = 0.5,
-                    MinimumThroughput = 10,                             // at least 10 calls before evaluating
-                    BreakDuration = TimeSpan.FromSeconds(120),
-                    ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                        .Handle<HttpRequestException>()
-                        .HandleResult(r => (int)r.StatusCode >= 500)
-                };
+                    options.Retry = new HttpRetryStrategyOptions
+                    {
+                        MaxRetryAttempts = 3,
+                        Delay = TimeSpan.FromSeconds(2),
+                        BackoffType = DelayBackoffType.Exponential,
+                        UseJitter = true,
+                        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                            .Handle<HttpRequestException>()
+                            .HandleResult(r => r.StatusCode == HttpStatusCode.TooManyRequests)
+                            .HandleResult(r => (int)r.StatusCode >= 500)
+                    };
 
-                // Timeout: per-request timeout (attempt timeout)
-                options.AttemptTimeout = new HttpTimeoutStrategyOptions
-                {
-                    Timeout = TimeSpan.FromSeconds(15)
-                };
+                    options.CircuitBreaker = new HttpCircuitBreakerStrategyOptions
+                    {
+                        FailureRatio = 0.5,
+                        MinimumThroughput = 10,
+                        BreakDuration = TimeSpan.FromSeconds(120),
+                        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+                            .Handle<HttpRequestException>()
+                            .HandleResult(r => (int)r.StatusCode >= 500)
+                    };
 
-                // Optional: total pipeline timeout (whole operation including retries)
-                options.TotalRequestTimeout = new HttpTimeoutStrategyOptions
-                {
-                    Timeout = TimeSpan.FromSeconds(60)
-                };
+                    options.AttemptTimeout = new HttpTimeoutStrategyOptions
+                    {
+                        Timeout = TimeSpan.FromSeconds(15)
+                    };
 
-                // Optional: rate limiter if API is very strict – but skip for now unless you hit hard limits
-                // options.RateLimiter = new ...
-            });
+                    options.TotalRequestTimeout = new HttpTimeoutStrategyOptions
+                    {
+                        Timeout = TimeSpan.FromSeconds(60)
+                    };
+                });
 
-            // Services & ViewModels
-            builder.Services.AddSingleton<LaunchService>();
+            // Data & services
+            builder.Services.AddSingleton<ILaunchCache, FileLaunchCache>();
+            builder.Services.AddSingleton<ILaunchService, LaunchService>();
+
+            // Shell + pages + VMs (point 1: constructor DI)
+            builder.Services.AddSingleton<AppShell>();
             builder.Services.AddTransient<UpcomingLaunchesViewModel>();
+            builder.Services.AddTransient<PreviousLaunchesViewModel>();
+            builder.Services.AddTransient<LaunchDetailViewModel>();
             builder.Services.AddTransient<UpcomingLaunchesPage>();
+            builder.Services.AddTransient<PreviousLaunchesPage>();
+            builder.Services.AddTransient<LaunchDetailPage>();
 
             return builder.Build();
         }

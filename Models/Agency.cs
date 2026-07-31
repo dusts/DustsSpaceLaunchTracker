@@ -1,4 +1,4 @@
-﻿namespace DustsSpaceLaunchTracker.Models
+namespace DustsSpaceLaunchTracker.Models
 {
     /// <summary>
     /// Represents an agency/organization/launch service provider in TheSpaceDevs API.
@@ -14,7 +14,7 @@
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Short/abbreviated name (e.g. "SpaceX")
+        /// Short/abbreviated name (e.g. "SpaceX" / "SpX")
         /// </summary>
         public string? Abbrev { get; set; }
 
@@ -26,9 +26,10 @@
         public string? CountryCode { get; set; }          // ISO 3166-1 alpha-3, e.g. "USA", "CHN", "RUS"
 
         /// <summary>
-        /// Founding year or null
+        /// Founding year as returned by the API (often a string like "2002").
+        /// NumberHandling.AllowReadingFromString also allows numeric JSON.
         /// </summary>
-        public int? FoundingYear { get; set; }
+        public string? FoundingYear { get; set; }
 
         /// <summary>
         /// Main logo URL (often white-on-transparent PNG/SVG)
@@ -55,9 +56,16 @@
         /// </summary>
         public string? Description { get; set; }
 
-        // Less commonly used in card UI but good to have:
-        public string? Administrator { get; set; }       // e.g. "Elon Musk" for SpaceX (sometimes present)
-        public bool Launchers { get; set; }               // true if they develop/operate launch vehicles
-        public bool Spacecraft { get; set; }              // true if they build spacecraft
+        public string? Administrator { get; set; }
+
+        /// <summary>
+        /// Launch vehicles summary string from API (e.g. "Falcon | Starship"), not a bool.
+        /// </summary>
+        public string? Launchers { get; set; }
+
+        /// <summary>
+        /// Spacecraft summary string from API (e.g. "Dragon"), not a bool.
+        /// </summary>
+        public string? Spacecraft { get; set; }
     }
 }

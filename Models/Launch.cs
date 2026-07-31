@@ -1,4 +1,6 @@
-﻿namespace DustsSpaceLaunchTracker.Models
+using System.Text.Json.Serialization;
+
+namespace DustsSpaceLaunchTracker.Models
 {
     /// <summary>
     /// Represents a single launch (detailed mode)
@@ -15,12 +17,18 @@
         public DateTime? WindowStart { get; set; }
         public DateTime? WindowEnd { get; set; }
 
-        public int? NetPrecisionId { get; set; }                    // Optional: links to precision table
-        public LaunchNetPrecision? NetPrecision { get; set; }       // Detailed in detailed mode
+        public int? NetPrecisionId { get; set; }
+        public LaunchNetPrecision? NetPrecision { get; set; }
 
         public int? Probability { get; set; }                       // 0–100 or null
+
+        // API uses no underscore: holdreason / failreason
+        [JsonPropertyName("holdreason")]
         public string? HoldReason { get; set; }
+
+        [JsonPropertyName("failreason")]
         public string? FailReason { get; set; }
+
         public string? WeatherConcerns { get; set; }
         public Agency? LaunchServiceProvider { get; set; }
 
@@ -31,19 +39,30 @@
         public Pad? Pad { get; set; }
 
         public string? Image { get; set; }                          // Main launch image URL
-        public string? Infographic { get; set; }                    // Optional infographic URL
+        public string? Infographic { get; set; }
 
-        public List<string> InfoUrls { get; set; } = new();         // renamed from infoURLs
-        public List<string> VidUrls { get; set; } = new();          // renamed from vidURLs
+        // API keys are infoURLs / vidURLs (mixed case), not snake_case
+        [JsonPropertyName("infoURLs")]
+        public List<MediaUrl> InfoUrls { get; set; } = new();
+
+        [JsonPropertyName("vidURLs")]
+        public List<MediaUrl> VidUrls { get; set; } = new();
+
         public bool WebcastLive { get; set; }
 
-        // Optional: for later features
         public List<Update>? Updates { get; set; }
-        public List<Program>? Programs { get; set; }                // array of programs
-        public List<string>? Hashtags { get; set; }                 // sometimes array
 
-        // Attempt counters (useful for badges / stats)
-        public int OrbitalLaunchAttemptCount { get; set; }
-        public int LocationLaunchAttemptCount { get; set; }
+        // API key is "program" (singular)
+        [JsonPropertyName("program")]
+        public List<Program>? Programs { get; set; }
+
+        // API key is singular "hashtag"
+        [JsonPropertyName("hashtag")]
+        public string? Hashtag { get; set; }
+
+        // API returns null for some vehicles (e.g. Starship suborbital / early flights)
+        public int? OrbitalLaunchAttemptCount { get; set; }
+        public int? LocationLaunchAttemptCount { get; set; }
     }
 }
+

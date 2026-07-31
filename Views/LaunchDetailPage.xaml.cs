@@ -2,20 +2,20 @@ using DustsSpaceLaunchTracker.ViewModels;
 
 namespace DustsSpaceLaunchTracker.Views;
 
-public partial class UpcomingLaunchesPage : ContentPage
+[QueryProperty(nameof(LaunchId), "LaunchId")]
+public partial class LaunchDetailPage : ContentPage
 {
-    private readonly UpcomingLaunchesViewModel _vm;
+    private readonly LaunchDetailViewModel _vm;
 
-    public UpcomingLaunchesPage(UpcomingLaunchesViewModel vm)
+    public LaunchDetailPage(LaunchDetailViewModel vm)
     {
         InitializeComponent();
         BindingContext = _vm = vm;
     }
 
-    protected override async void OnAppearing()
+    public string LaunchId
     {
-        base.OnAppearing();
-        await _vm.InitializeAsync();
+        set => _vm.LaunchId = value;
     }
 
     protected override void OnDisappearing()

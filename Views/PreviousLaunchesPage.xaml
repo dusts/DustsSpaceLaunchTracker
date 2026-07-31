@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="DustsSpaceLaunchTracker.Views.UpcomingLaunchesPage"
+             x:Class="DustsSpaceLaunchTracker.Views.PreviousLaunchesPage"
              xmlns:vm="clr-namespace:DustsSpaceLaunchTracker.ViewModels"
              xmlns:cards="clr-namespace:DustsSpaceLaunchTracker.Views.Cards"
-             x:DataType="vm:UpcomingLaunchesViewModel"
-             Title="Upcoming">
+             x:DataType="vm:PreviousLaunchesViewModel"
+             Title="Previous">
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto"
           Padding="12"
@@ -23,12 +23,11 @@
                    IsVisible="{Binding StatusText, Converter={StaticResource IsNotNullOrEmptyConverter}}" />
         </VerticalStackLayout>
 
-        <!-- Search (point 11) -->
         <Grid Grid.Row="1"
               ColumnDefinitions="*,Auto,Auto"
               ColumnSpacing="6">
             <SearchBar Grid.Column="0"
-                       Placeholder="Search launches…"
+                       Placeholder="Search previous launches…"
                        Text="{Binding SearchText}"
                        SearchCommand="{Binding SearchCommand}" />
             <Button Grid.Column="1"
@@ -60,7 +59,7 @@
             <CollectionView ItemsSource="{Binding Launches}"
                             RemainingItemsThreshold="5"
                             RemainingItemsThresholdReachedCommand="{Binding LoadMoreLaunchesCommand}"
-                            EmptyView="No launches found."
+                            EmptyView="No previous launches found."
                             SelectionMode="None">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vm:LaunchListItemViewModel">

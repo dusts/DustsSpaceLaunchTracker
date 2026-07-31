@@ -2,11 +2,11 @@ using DustsSpaceLaunchTracker.ViewModels;
 
 namespace DustsSpaceLaunchTracker.Views;
 
-public partial class UpcomingLaunchesPage : ContentPage
+public partial class PreviousLaunchesPage : ContentPage
 {
-    private readonly UpcomingLaunchesViewModel _vm;
+    private readonly PreviousLaunchesViewModel _vm;
 
-    public UpcomingLaunchesPage(UpcomingLaunchesViewModel vm)
+    public PreviousLaunchesPage(PreviousLaunchesViewModel vm)
     {
         InitializeComponent();
         BindingContext = _vm = vm;
